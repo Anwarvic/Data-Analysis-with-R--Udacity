@@ -1,0 +1,132 @@
+---
+title: "lesson3_problems_answer"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Load libraries and packages}
+library(ggplot2)
+data(diamonds)
+```
+
+## Discovering Diamonds Dataset
+
+```{r Diamond Dataset}
+?diamonds
+summary(diamonds)
+str(diamonds)
+nrow(diamonds)    #observations
+levels(diamonds$color)
+
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+## Creating Histogram of Price variable
+
+```{r price histogram}
+qplot(data = diamonds, x= price, binwidth = 50, 
+      color = I('#000000'), fill = I('#EFE4B0')) +
+  scale_x_continuous(limits = c(1500, 5400))
+
+summary(diamonds$price)
+
+```
+
+## Price specification
+
+```{r price specification}
+nrow(subset(diamonds, price<500))
+nrow(subset(diamonds, price<250))
+nrow(subset(diamonds, price>=15000))
+
+```
+
+## Price and Cut
+
+```{r cut specification}
+qplot(data = diamonds, x= price, binwidth = 200, 
+      color = I('#000000'), fill = I('#EFE4B0')) +
+  scale_x_continuous(limits = c(1500, 5400)) +
+  facet_wrap(~cut, ncol=5)
+
+by(diamonds$price, diamonds$cut, summary)
+
+
+```
+
+## Price and Cut and carat
+
+```{r cut specification}
+price_per_carat = diamonds$price/diamonds$carat
+length(price_per_carat)
+
+qplot(data = diamonds, x= price_per_carat, 
+      color = I('#000000'), fill = I('#EFE4B0')) +
+  scale_x_continuous(limits = c(0, 5400)) +
+  facet_wrap(~cut, ncol=5) 
+  
+
+```
+
+## Boxplot of price and color
+
+```{r Boxplot of price and color}
+
+qplot(data = diamonds, x= color, y = price, geom = "boxplot") + 
+  coord_cartesian(ylim= c(0, 8000))
+
+by(diamonds$price, diamonds$color, summary)
+
+```
+
+## Boxplot of price_per_carat and color
+
+```{r Boxplot of price_per_carat and color}
+
+price_per_carat = diamonds$price/diamonds$carat
+
+qplot(data = diamonds, x= color, y = price_per_carat, geom = "boxplot") + 
+  coord_cartesian(ylim= c(2000, 6000))
+
+
+```
+
+## Frequency Polygon of weight
+
+```{r carat freqpoly}
+
+
+qplot(data = diamonds, x= carat, geom = "freqpoly") + 
+  scale_x_continuous(limits = c(0, 6),
+                     breaks = seq(0, 6, 0.2)) + 
+  scale_y_continuous(breaks = seq(0, 20000, 1000))
+
+```
+
+## Reading another dataset
+
+```{r Another dataset}
+average_age_billionair <- read.csv("Indicator_Average age.xlsx")
+
+str(average_age_billionair)
+qplot(data = diamonds, x= carat, geom = "freqpoly") + 
+  scale_x_continuous(limits = c(0, 6),
+                     breaks = seq(0, 6, 0.2)) + 
+  scale_y_continuous(breaks = seq(0, 20000, 1000))
+
+```
