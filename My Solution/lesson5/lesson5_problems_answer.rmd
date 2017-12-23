@@ -1,0 +1,125 @@
+---
+title: "lesson5_problems_answer"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Load libraries and packages}
+library(ggplot2)
+data(diamonds)
+```
+
+## Discovering Diamonds Dataset
+
+```{r Diamond Dataset}
+?diamonds
+summary(diamonds)
+str(diamonds)
+head(diamonds)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+## Creating Histogram of prices over the color
+
+```{r price and color histogram}
+ggplot(data = diamonds, aes(x=price)) +
+      facet_wrap(~ color) + 
+      geom_histogram(aes(fill = cut), binwidth = 200)
+  
+```
+
+## Creating Scatterplot of prices over the color
+
+```{r price and color scatterplot}
+ggplot(data = diamonds, aes(x= table, y= price)) +
+      geom_point(aes(color = cut)) +
+      coord_cartesian(xlim= c(45, 75)) 
+  
+```
+
+
+## Creating Scatterplot of prices over the volume
+
+```{r price and color scatterplot}
+diamonds$volume <- diamonds$x * diamonds$y * diamonds$z
+
+ggplot(data = diamonds, aes(x= volume, y= price)) +
+      geom_point(aes(color = clarity)) +
+      scale_y_log10() + 
+      xlim(0, quantile(diamonds$volume, 0.99))
+  
+```
+
+
+## Facebook Dataset
+
+```{r Facebook Dataset}
+facebook <- read.csv("pseudo_facebook.tsv", sep='\t')
+names(facebook)
+
+#create a variable called 'prop_initiated'
+facebook$prop_initiated = facebook$friendships_initiated / facebook$friend_count
+
+
+```
+
+## Line graph of 'prop_initiated' and 'tenure'
+
+```{r price and carat scatter plot}
+#create 'year_joined' variable which contains the year when the user joined facebook
+facebook$year_joined = floor(2014 - (facebook$tenure / 365)) 
+facebook <- subset(facebook, !is.na(year_joined))
+c1<- cut(facebook$year_joined, c(2004, 2009, 2011, 2012, 2014))
+table(c1)
+
+
+#the Line Graph
+p <- ggplot(data= facebook, aes(x= tenure, y=prop_initiated)) + 
+        geom_line(aes(color = c1), stat = "summary", fun.y= "median")
+p
+
+```
+
+
+## Smoothing the last plot
+
+```{r volume variable}
+#adding smoother to the line graph
+p <- p + geom_smooth()
+
+#make the smoother as the line graph
+p <- ggplot(data= facebook, aes(x= tenure, y=prop_initiated)) + 
+        geom_smooth(aes(color = c1))
+p  
+```
+
+
+## Mean of the last plot
+
+```{r Mean of the last plot}
+last_bucket = subset(facebook, year_joined> 2012)
+summary(last_bucket$prop_initiated)
+
+```
+
+## scatterplot of cut Vs price/carat in 'diamonds' dataset
+
+```{r scatterplot of cut Vs price/carat}
+ggplot(data =diamonds, aes(x= cut, y= price/carat)) + 
+  geom_jitter(aes(color = color), alpha = 1/7) + 
+  facet_wrap( ~ clarity)
+
+```
+
