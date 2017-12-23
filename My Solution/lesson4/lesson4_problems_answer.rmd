@@ -1,0 +1,183 @@
+---
+title: "lesson4_problems_answer"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Load libraries and packages}
+library(ggplot2)
+data(diamonds)
+```
+
+## Discovering Diamonds Dataset
+
+```{r Diamond Dataset}
+?diamonds
+summary(diamonds)
+str(diamonds)
+head(diamonds)
+
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+## Creating scatter plot of Price Vs x
+
+```{r price and x scatter plot}
+ggplot(data = diamonds, aes(x=price, y=x)) +
+  geom_point()
+
+```
+
+## Price and x Correlation
+
+```{r correlation}
+cor.test(diamonds$price, diamonds$x, method="pearson")
+
+cor.test(diamonds$price, diamonds$y, method="pearson")
+
+cor.test(diamonds$price, diamonds$z, method="pearson")
+
+```
+
+## Creating scatter plot of Price Vs depth
+
+```{r price and depth scatter plot}
+ggplot(data = diamonds, aes(x = depth, y = price)) + 
+  geom_point(alpha = 1/100) +
+  scale_x_continuous(breaks= seq(43, 79, 2))
+
+```
+
+
+## Price and depth Correlation
+
+```{r depth correlation}
+cor.test(diamonds$price, diamonds$depth, method="pearson")
+
+
+
+```
+
+## price Vs carat Scatter plot
+
+```{r price and carat scatter plot}
+ggplot(data = diamonds, aes(x = carat, y = price)) + 
+  geom_point() + 
+  xlim(0.20, quantile(diamonds$carat, 0.99)) + 
+  ylim(326, quantile(diamonds$price, 0.99))
+
+  
+
+```
+
+## Create Volume variable in diamonds dataset
+
+```{r volume variable}
+
+diamonds$volume <- diamonds$x * diamonds$y * diamonds$z
+#making sure everthing went right
+names (diamonds)
+
+length(diamonds$volume) == length(diamonds$x)
+
+```
+
+## price Vs volume Scatter plot
+
+```{r price and volume scatter plot}
+ggplot(data = diamonds, aes(x = volume, y = price)) + 
+  geom_point() 
+
+```
+
+## Reading some outliers from the last scatter plot
+
+```{r outliers}
+zero_volume_outlier <- subset(diamonds, volume == 0)
+length(zero_volume_outlier)
+
+price_volume_outlier <- subset(diamonds, price == 0)
+length(price_volume_outlier)
+
+```
+
+## correlation between price and 0 <volume<=800
+
+```{r correlation}
+
+diamonds_without_volume_outliers = subset(diamonds, volume>0 & volume< 800)
+cor.test(x=diamonds_without_volume_outliers$price, y=diamonds_without_volume_outliers$volume)
+
+```
+
+
+## Smoother with price and volume
+
+```{r smoother}
+
+ggplot(data= diamonds_without_volume_outliers, aes(x=price, y=volume)) + 
+  geom_point(alpha = 1/100) +
+  geom_smooth(method='lm', color= '#E70C00')
+
+```
+
+
+## diamondsByClarity data frame
+
+```{r smoother}
+
+library(dplyr)
+#let's group the whole diamonds dataset by clarity
+clarity_group = group_by(diamonds, clarity)
+
+diamondsByClarity = summarise(clarity_group, 
+                    mean_price = mean(price),
+                    median_price = median(price),
+                    min_price = min(price),
+                    max_price = max(price),
+                    n = n())
+
+head(diamondsByClarity)
+
+```
+
+
+## Bar plot
+
+```{r barplot}
+
+
+library(dplyr)
+library(gridExtra)
+
+
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+
+#the two bar plots
+p1 <- ggplot(data = diamonds_mp_by_clarity, aes(x=clarity, y=mean_price)) + 
+  geom_bar(stat="identity")
+
+p2 <- ggplot(data = diamonds_mp_by_color, aes(x=color, y=mean_price)) + 
+  geom_bar(stat="identity")
+
+grid.arrange(p1, p2)
+
+
+```

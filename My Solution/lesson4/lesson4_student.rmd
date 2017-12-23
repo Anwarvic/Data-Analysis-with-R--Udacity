@@ -1,0 +1,437 @@
+Lesson 4
+========================================================
+
+***
+
+### Scatterplots and Perceived Audience Size
+Notes:
+
+***
+
+### Scatterplots
+Notes:
+
+```{r Scatterplots}
+library(ggplot2)
+facebook <- read.csv("pseudo_facebook.tsv", sep='\t')
+
+qplot(data = facebook, x= age, y= friend_count)
+
+```
+
+***
+
+#### What are some things that you notice right away?
+Response:
+
+***
+
+### ggplot Syntax
+Notes:
+
+```{r ggplot Syntax}
+#here, we are going to produce ggplot which does the same thing as qplot
+ggplot(data = facebook, aes(x = age, y = friend_count)) + 
+  geom_point() + 
+  scale_x_discrete(limits = c(13, 90))
+
+summary(facebook$age)
+
+```
+
+***
+
+### Overplotting
+Notes:
+
+```{r Overplotting}
+
+ggplot(data = facebook, aes(x = age, y = friend_count)) + 
+  geom_point(alpha = 1/20) + 
+  scale_x_discrete(limits = c(13, 90))
+#alpha is used to set the transparency, so if alpha = 1/20 this means that
+#it takes 20 point to be located in the same place to get one black dot.
+
+```
+
+#### What do you notice in the plot?
+Response:
+
+***
+
+### Coord_trans()
+Notes:
+
+```{r Coord_trans()}
+ggplot(data = facebook, aes(x = age, y = friend_count)) + 
+  geom_point(alpha = 1/20) + 
+  scale_x_discrete(limits = c(13, 90)) +
+  coord_trans( y = "sqrt")
+```
+
+
+#### What do you notice?
+
+***
+
+### Alpha and Jitter
+Notes:
+
+```{r Alpha and Jitter}
+
+ggplot(data = facebook, aes(x = age, y = friendships_initiated)) + 
+  geom_point(alpha = 1/20) +
+  scale_x_discrete(limits = c(13, 90), breaks= seq(13, 90, 5))
+
+
+```
+
+***
+
+### Overplotting and Domain Knowledge
+Notes:
+
+***
+
+### Conditional Means
+Notes:
+
+```{r Conditional Means}
+
+library(dplyr)
+#let's group the whole facebook dataset's age.
+#group_by() funcion takes two arguments, the whole dataset and what you want to group
+age_group = group_by(facebook, age)
+
+#let's make some mathematical operation with age_group like determining mean and median
+#the mean is going to be calculated and put in 'friend_count_mean' vector
+#the median is going to be calculated and put in 'friend_count_median' vector
+#summarise() used to create a table
+#n() function is used to get the number of people in each group, and it's used only with summarise()
+friend_count_by_age = summarise(age_group, 
+                          friend_count_mean = mean(friend_count),
+                          friend_count_median = median(friend_count),
+                          nummber_of_people = n())
+
+head(friend_count_by_age, 20)
+#which gives the first 20 row from the table
+```
+
+Create your plot!
+
+```{r Conditional Means Plot}
+
+ggplot(data = friend_count_by_age, 
+       aes(x = age, y = friend_count_mean)) +
+       geom_line() 
+
+
+```
+
+***
+
+### Overlaying Summaries with Raw Data
+Notes:
+
+```{r Overlaying Summaries with Raw Data}
+#here, we are going to plot the scatter plot of friend count over the whole facebook dataset
+# and overlay the graph line of mean
+#we are going to choose a brighter color to be able to draw the graph line above it
+
+p <- ggplot(data = facebook, aes(x= age, y = friend_count)) + 
+          geom_point(alpha = 1/20, color = "#EFE4B0") + 
+          coord_cartesian(xlim= c(13, 75), ylim = c(0, 1000))
+
+#add a graph line which represents the mean of the whole graph. 
+p <- p + geom_line(stat = "summary", fun.y = mean)
+
+#add another graph line which represents the 10% quantile (first 10% of whole dataset friend_count).
+# linetype to make the line dashed
+p <- p + geom_line(stat="summary", fun.y = quantile, fun.args=list(probs=0.1), color = "#0C00EF", linetype = 2)
+
+#add another graph line which represents the 90% quantile.
+p <- p + geom_line(stat="summary", fun.y = quantile, fun.args=list(probs=0.9), color = "#0C00EF", linetype = 2)
+
+#add another graph line which represents the median (50%).
+p <- p + geom_line(stat="summary", fun.y = quantile, fun.args=list(probs=0.5), color = "#EF0014")
+
+p
+
+```
+
+#### What are some of your observations of the plot?
+Response:
+
+***
+
+### Moira: Histogram Summary and Scatterplot
+See the Instructor Notes of this video to download Moira's paper on perceived audience size and to see the final plot.
+
+Notes:
+
+***
+
+### Correlation
+Notes:
+
+```{r Correlation}
+#here, we are going to get correlation between 'age' and 'friend_count' in 'facebook' dataset
+#we can get the correlation using cor.test() function
+cor.test(facebook$age, facebook$friend_count, 
+         method = c("pearson"))
+#if the answer is less than 0.3 or -0.3, then there's a weak relation
+#if it's 0.5, then it's moderate
+#if it's higher than 0.7, then it's pretty strong
+
+##NOTE##
+#the correlation doesn't depend on which parameter is in x-axis or y-axis
+
+#we can do the same but with using with() function like so:
+with(facebook, cor.test(age, friend_count, method="pearson"))
+
+```
+
+Look up the documentation for the cor.test function.
+
+What's the correlation between age and friend count? Round to three decimal places.
+Response:
+
+***
+
+### Correlation on Subsets
+Notes:
+
+```{r Correlation on Subsets}
+#with() function is pretty awesome with subsetting.
+#let's use the correlation with datasets below 70 years old
+with(subset(facebook, age<=70), cor.test(age, friend_count, method="pearson"))
+
+
+```
+
+***
+
+### Correlation Methods
+Notes:
+
+***
+
+## Create Scatterplots
+Notes:
+
+```{r}
+ggplot(data = facebook, aes(x= likes_received, y = www_likes_received)) + 
+          geom_point()
+
+
+```
+
+***
+
+### Strong Correlations
+Notes:
+
+```{r Strong Correlations}
+#here, we are going to plot the 95% from the previous data. 
+#we can do that using quantile() function
+p <- ggplot(data = facebook, aes(x= likes_received, y = www_likes_received)) + 
+        geom_point() +
+        xlim(0, quantile(facebook$likes_received, 0.95)) + 
+        ylim(0, quantile(facebook$www_likes_received, 0.95))
+p
+```
+
+```{r Smoother}
+#here, we are going to add the 'correlation line' which is the best line that fits through 
+#these datasets. We can do that by adding a smoother like so
+p<- p + geom_smooth(method='lm', color= '#E70C00')
+p
+#'lm' means 'linear model' which represents 'linear relation'
+```
+
+
+What's the correlation betwen the two variables? Include the top 5% of values for the variable in the calculation and round to 3 decimal places.
+
+```{r Correlation Calcuation}
+cor.test(facebook$likes_received, facebook$www_likes_received)       
+
+```
+
+Response:
+
+***
+
+### Moira on Correlation
+Notes:
+
+***
+
+### More Caution with Correlation
+Notes:
+
+```{r More Caution With Correlation}
+install.packages('alr3')
+library(alr3)
+?Mitchell
+head(Mitchell)
+```
+
+Create your plot!
+
+```{r Temp vs Month}
+
+ggplot(data= Mitchell, aes(x= Month, y= Temp)) +
+  geom_point()
+```
+
+***
+
+### Noisy Scatterplots
+a. Take a guess for the correlation coefficient for the scatterplot.
+
+b. What is the actual correlation of the two variables?
+(Round to the thousandths place)
+
+```{r Noisy Scatterplots}
+cor.test(Mitchell$Month, Mitchell$Temp, method="pearson")
+
+
+```
+
+***
+
+### Making Sense of Data
+Notes:
+
+```{r Making Sense of Data}
+#we are going to break the month parameter into a year
+ggplot(data= Mitchell, aes(x= Month, y= Temp)) +
+        geom_point() +
+        scale_x_continuous(breaks= seq(0, 203, 12))
+        
+
+
+```
+
+***
+
+### A New Perspective
+
+What do you notice?
+Response:
+
+Watch the solution video and check out the Instructor Notes!
+Notes:
+
+***
+
+### Understanding Noise: Age to Age Months
+Notes:
+
+```{r Understanding Noise: Age to Age Months}
+
+ggplot(data=friend_count_by_age, aes(x=age, y= friend_count_mean)) + 
+  geom_line()
+
+```
+
+***
+
+### Age with Months Means
+
+```{r Age with Months Means}
+
+facebook$age_in_month <- facebook$age + (12 - facebook$dob_month) / 12
+head(facebook$age_in_month)
+
+#making sure everything is ok
+names(facebook)
+
+length(facebook$age)
+length(facebook$dob_month)
+length(facebook$age_in_month)
+```
+
+Programming Assignment
+```{r Programming Assignment}
+
+library(dplyr)
+#let's group the whole facebook dataset's age_in_month.
+age_group = group_by(facebook, age_in_month)
+
+friend_count_by_age_in_month = summarise(age_group, 
+                               friend_count_mean = mean(friend_count),
+                               friend_count_median = median(friend_count),
+                               n = n())
+
+head(friend_count_by_age_in_month)
+#which gives the first 6 rows from the table
+
+#make sure everything is ok about my limits
+range(facebook$age_in_month)
+
+
+```
+
+***
+
+### Noise in Conditional Means
+
+```{r Noise in Conditional Means}
+#the whole dataset of all ages
+ggplot(data=friend_count_by_age_in_month, aes(x=age_in_month, y=friend_count_mean)) + 
+    geom_line()
+
+#with age less than 71 years old
+ggplot(data=subset(friend_count_by_age_in_month, age_in_month<71), aes(x=age_in_month, y=friend_count_mean)) + 
+    geom_line()
+```
+
+***
+
+### Smoothing Conditional Means
+Notes:
+
+```{r Smoothing Conditional Means}
+#here, we are going to know how to smooth any graph line
+
+############## WITHOUT SMOOTHING #######################
+#this is a graph line made by 'age' and 'friend_count_mean' in 'friend_count_by-age' dataset
+p1<- ggplot(data=subset(friend_count_by_age, age<71), aes(x=age, y=friend_count_mean)) + 
+            geom_line()
+
+#this is a graph line made by 'age_in_month' and 'friend_count_mean' in 'friend_count_by-age_in_month' dataset
+p2<- ggplot(data=subset(friend_count_by_age_in_month, age_in_month<71), aes(x=age_in_month, y=friend_count_mean)) + 
+    geom_line()
+
+library(gridExtra)
+grid.arrange(p1, p2)
+############## WITH SMOOTHING #######################
+p1<- ggplot(data=subset(friend_count_by_age, age<71), aes(x=age, y=friend_count_mean)) + 
+            geom_line() + 
+            geom_smooth()
+
+#this is a graph line made by 'age_in_month' and 'friend_count_mean' in 'friend_count_by-age_in_month' dataset
+p2<- ggplot(data=subset(friend_count_by_age_in_month, age_in_month<71), aes(x=age_in_month, y=friend_count_mean)) + 
+    geom_line() +
+    geom_smooth()
+
+
+grid.arrange(p1, p2)
+```
+
+***
+
+### Which Plot to Choose?
+Notes:
+
+***
+
+### Analyzing Two Variables
+Reflection:
+
+***
+
+Click **KnitHTML** to see all of your hard work and to have an html
+page of this lesson, your answers, and your notes!
+
